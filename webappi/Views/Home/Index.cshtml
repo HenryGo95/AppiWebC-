@@ -1,0 +1,52 @@
+﻿@model webappi.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Inicio de Sesión";
+
+    // Configuración de conexión a la base de datos MongoDB
+    var connectionString = "mongodb://localhost:27017";
+    var dbName = "Biblioteca";
+    var collectionName = "Usuarios";
+
+    var client = new MongoClient(connectionString);
+    var database = client.GetDatabase(dbName);
+    var collection = database.GetCollection<Usuario>(collectionName);
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@using (Html.BeginForm("Login", "Account", FormMethod.Post))
+{
+    <div>
+        <label>Usuario</label>
+        <input type="text" name="Username" required />
+    </div>
+    <div>
+        <label>Contraseña</label>
+        <input type="password" name="Password" required />
+    </div>
+    <button type="submit">Iniciar Sesión</button>
+}
+
+@{
+    // Código del controlador para la autenticación
+    if (Request.Method == "POST")
+    {
+        var username = Request.Form["Username"];
+        var password = Request.Form["Password"];
+
+        var user = collection.Find(u => u.Username == username && u.Password == password).FirstOrDefault();
+
+        if (user != null)
+        {
+            // Usuario autenticado
+            // Puedes realizar alguna acción, como redirigir a otra página
+            Response.Redirect("/Home/Index");
+        }
+        else
+        {
+            @Html.Raw("<p style=\"color:red;\">Credenciales inválidas</p>")
+            ;
+        }
+    }
+}
